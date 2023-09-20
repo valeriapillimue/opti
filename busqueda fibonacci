@@ -1,0 +1,54 @@
+def fibonacci(n):
+    fib_sequence = [0, 1]
+    while len(fib_sequence) < n:
+        next_fib = fib_sequence[-1] + fib_sequence[-2]
+        fib_sequence.append(next_fib)
+    return fib_sequence[-1]
+
+def f(x):
+    return x**2 + 2*x + 1
+
+def busqueda_fibonacci (func, a, b, h, e):
+    n = 2
+    f = fibonacci(n)
+    while f < ((b-a)/h):
+        n += 1
+        f = fibonacci(n)
+    fmenos = fibonacci(n-1)
+    landa = a + (1 - (fmenos/f))*(b - a)
+    miu = a + (fmenos/f)*(b - a)
+    flanda = f(landa)
+    fmiu = f(miu)
+    k = 1
+    #paso principal
+    while flanda > fmiu:
+        #paso 2
+        ak = landa
+        bk = b
+        #paso 4
+        landak = ak + (1 - (fibonacci(n-k-1)/ fibonacci(n - k))) * (bk - ak)
+        miuk = ak + (fibonacci(n-k-1)/fibonacci(n - k)) * (bk - ak)
+        if k == (n - 2):
+            #paso 5
+            landan = landak
+            miun = landan + e
+            flandan = f(landan)
+            fmiun = f(miun)
+            if flandan > fmiun:
+                an = landan
+                bn = bk
+                return (an + bn)/2
+            if flanda <= fmiun:
+                an = ak
+                bn =miun
+                return (an + bn)/2
+            #acaba paso 5
+        else:
+            a = ak
+            b = bk 
+            landa = landak
+            miu = miuk
+            flanda = f(landa)
+            fmiu =  f(miu)
+            k+=1
+            
