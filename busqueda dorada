@@ -1,0 +1,52 @@
+import math
+
+def f(x):
+    return x**2 + 2*x + 1
+
+def busqueda_seccion_dorada(func, a, b, h):
+    alfa = (math.sqrt(5) - 1) / 2
+    landa = a + (1-alfa)*(b-a)
+    miu = a + alfa * (b-a)
+    flanda = func(landa)
+    fmiu = func(miu)
+    
+    while b-a > h:
+        if flanda > fmiu:
+            #paso 2
+            ak = flanda
+            bk = b
+            #paso 4
+            landak = ak + (1 - alfa)*(bk - ak)
+            miuk = ak + alfa*(bk - ak)
+            
+            flanda = func(landak)
+            fmiu = func(miuk)
+            
+            a = ak
+            b = bk 
+            landa = landak
+            miu = miuk
+            
+        if flanda <= fmiu:
+            #paso 3
+            ak = a
+            bk = miu
+            #paso 4
+            landak = ak + (1 - alfa)*(bk - ak)
+            miuk = ak + alfa*(bk - ak)
+            
+            flanda = func(landak)
+            fmiu = func(miuk)
+            
+            a = ak
+            b = bk 
+            landa = landak
+            miu = miuk
+        
+        return (a + b)/2
+    
+
+a = -5
+b = 5
+minimum = busqueda_seccion_dorada(f, a, b, 0.01)
+print("El mínimo se encuentra en x =", minimum)
