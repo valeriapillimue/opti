@@ -1,13 +1,12 @@
 import sympy as sp
 import math 
 
-
 def busqueda_biseccion(f, a, b, h):
     fprima = sp.diff(f,'x')
     while b-a > h:
         #paso 1
         landa = (a+b)/2
-        fpl = eval(fprima, vars(math), {'x':landa})
+        fpl = eval(str(fprima), vars(math), {'x':landa})
         #paso 2
         if fpl == 0:
             return landa
@@ -20,3 +19,5 @@ def busqueda_biseccion(f, a, b, h):
         a = ak
         b = bk
     return (a+b)//2
+
+print(busqueda_biseccion('x**2', -5, 5, 0.001))
