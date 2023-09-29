@@ -1,0 +1,20 @@
+import sympy as sp
+import math 
+
+def metodo_newton (f, landa, h, e):
+    fprima = sp.diff(f,'x')
+    fsprima = sp.diff(fprima, 'x')
+    #paso 1
+    fpl = abs(eval(str(fprima), vars(math), {'x':landa}))
+    while fpl > e:
+        fspl = eval(str(fsprima), vars(math), {'x':landa})
+        landak = landa - (fpl / fspl)
+        #paso 2
+        if abs(landak - landa) <e:
+            return landak
+        else:
+            landa = landak
+            fpl = abs(eval(str(fprima), vars(math), {'x':landa}))
+    return landa  
+
+print(metodo_newton('(x+3)**2 ', 2, 0.001, 0.00001))      
