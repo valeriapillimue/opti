@@ -1,0 +1,139 @@
+import math
+import sympy as sp
+
+def f(x):
+    return x**2 + 2*x + 1
+
+#Busqueda dorada ---------------------------------------------------------------------------------
+def busqueda_dorada(func, a, b, h):
+    alfa = (math.sqrt(5) - 1) / 2
+    landa = a + (1-alfa)*(b-a)
+    miu = a + alfa * (b-a)
+    flanda = func(landa)
+    fmiu = func(miu)
+    while b-a > h:
+        if flanda > fmiu:
+            #paso 2
+            ak = flanda
+            bk = b
+            #paso 4
+            landak = ak + (1 - alfa)*(bk - ak)
+            miuk = ak + alfa*(bk - ak)
+            
+            flanda = func(landak)
+            fmiu = func(miuk)
+            
+            a = ak
+            b = bk 
+            landa = landak
+            miu = miuk
+            
+        if flanda <= fmiu:
+            #paso 3
+            ak = a
+            bk = miu
+            #paso 4
+            landak = ak + (1 - alfa)*(bk - ak)
+            miuk = ak + alfa*(bk - ak)
+            flanda = func(landak)
+            fmiu = func(miuk)
+            a = ak
+            b = bk 
+            landa = landak
+            miu = miuk
+        
+        return (a + b)/2
+
+#Busqueda fibonacci ------------------------------------------------------------------
+def fibonacci(n):
+    fib_sequence = [0, 1]
+    while len(fib_sequence) < n:
+        next_fib = fib_sequence[-1] + fib_sequence[-2]
+        fib_sequence.append(next_fib)
+    return fib_sequence[-1]
+
+def busqueda_fibonacci (f, a, b, h, e):
+    n = 2
+    fibo = fibonacci(n)
+    while fibo < ((b-a)/h):
+        n += 1
+        fibo = fibonacci(n)
+    fmenos = fibonacci(n-1)
+    landa = a + (1 - (fmenos/fibo))*(b - a)
+    print(landa)
+    miu = a + (fmenos/fibo)*(b - a)
+    flanda = f(landa)
+    print(flanda)
+    fmiu = f(miu)
+    #paso principal
+    for k in range(n):
+        #paso 1
+        if flanda>fmiu:
+            #paso 2
+            ak = landa
+            bk = b
+        else:
+            ak = a
+            bk = miu
+        #paso 4
+        landak = ak + (1 - (fibonacci(n-k-1)/ fibonacci(n - k))) * (bk - ak)
+        miuk = ak + (fibonacci(n-k-1)/fibonacci(n - k)) * (bk - ak)
+        if k == (n - 2):
+            #paso 5
+            landan = landak
+            miun = landan + e
+            flandan = f(landan)
+            fmiun = f(miun)
+            if flandan > fmiun:
+                an = landan
+                bn = bk
+                return (an + bn)/2
+            if flanda <= fmiun:
+                an = ak
+                bn =miun
+                return (an + bn)/2
+            #acaba paso 5
+        else:
+            a = ak
+            b = bk 
+            landa = landak
+            miu = miuk
+            flanda = f(landa)
+            fmiu =  f(miu)
+            
+#Metodo biseccion ----------------------------------------------------------------------
+def busqueda_biseccion(f, a, b, h):
+    fprima = sp.diff(f,'x')
+    while b-a > h:
+        #paso 1
+        landa = (a+b)/2
+        fpl = eval(str(fprima), vars(math), {'x':landa})
+        #paso 2
+        if fpl == 0:
+            return landa
+        elif fpl > 0:
+            ak = a
+            bk = landa
+        elif fpl < 0 :
+            ak = landa
+            bk = b
+        a = ak
+        b = bk
+    return (a+b)//2
+
+#Metodo de Newton -----------------------------------------------------------------------
+def metodo_newton (f, landa, h, e):
+    fprima = sp.diff(f,'x')
+    fsprima = sp.diff(fprima, 'x')
+    #paso 1
+    fpl = abs(eval(str(fprima), vars(math), {'x':landa}))
+    while fpl > e:
+        fspl = eval(str(fsprima), vars(math), {'x':landa})
+        landak = landa - (fpl / fspl)
+        #paso 2
+        if abs(landak - landa) <e:
+            return landak
+        else:
+            landa = landak
+            fpl = abs(eval(str(fprima), vars(math), {'x':landa}))
+    return landa  
