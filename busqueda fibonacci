@@ -5,8 +5,9 @@ def fibonacci(n):
         fib_sequence.append(next_fib)
     return fib_sequence[-1]
 
+#escribir funcion
 def f1(x):
-    return (x-1)**2
+    return retornar la funcion a evaluar
 
 def busqueda_fibonacci (f, a, b, h, e):
     n = 2
