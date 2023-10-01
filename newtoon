@@ -17,4 +17,4 @@ def metodo_newton (f, landa, h, e):
             fpl = abs(eval(str(fprima), vars(math), {'x':landa}))
     return landa  
 
-print(metodo_newton('(x+3)**2 ', 2, 0.001, 0.00001))      
+print(metodo_newton('insertar funcion en str', landa, h, e))      
