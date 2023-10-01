@@ -20,4 +20,4 @@ def busqueda_biseccion(f, a, b, h):
         b = bk
     return (a+b)//2
 
-print(busqueda_biseccion('x**2', -5, 5, 0.001))
+print(busqueda_biseccion('insertar la funcion en str', a, b, 0.001))
