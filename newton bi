@@ -1,0 +1,29 @@
+import sympy as sp
+import math 
+
+def func (x,y):
+    return x+y
+
+def gradiante (f, p):
+    fprimax = sp.diff(f,'x')
+    fprimay = sp.diff(f,'y')
+    x = abs(eval(str(fprimax), vars(math), {'x':p[0], 'y':p[1]}))
+    y = abs(eval(str(fprimay), vars(math), {'y':p[1], 'x':p[0]}))
+    gra = (x, y)
+    return gra
+
+def hessian_matriz(f, variables):
+    num_variables = len(variables)
+    hessian = np.zeros((num_variables, num_variables))
+    for i in range(num_variables):
+        for j in range(num_variables):
+            hessian[i, j] = np.gradient(np.gradient(f, variables[i], axis=i), variables[j], axis=j)
+    return hessian
+
+def metodo_newton_bi (f, e, x1):
+    gra = gradiante(f, x1)
+    norma = math.sqrt(gra[0]**2+gra[1]**2)
+    x = x1
+    
+    
+    xk = x -
