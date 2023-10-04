@@ -1,0 +1,49 @@
+import sympy as sp
+import math 
+
+def metodo_newton (f, landa, h, e):
+    fprima = sp.diff(f,'a')
+    fsprima = sp.diff(fprima, 'a')
+    #paso 1
+    fpl = abs(eval(str(fprima), vars(math), {'a':landa}))
+    while fpl > e:
+        fspl = eval(str(fsprima), vars(math), {'a':landa})
+        landak = landa - (fpl / fspl)
+        #paso 2
+        if abs(landak - landa) <e:
+            return landak
+        else:
+            landa = landak
+            fpl = abs(eval(str(fprima), vars(math), {'a':landa}))
+    return landa  
+
+
+# Define la función objetivo que deseas minimizar
+#def f(x):
+ #   return x[0]**2 + x[1]**2
+def gradiante (f, p):
+    fprimax = sp.diff(f,'x')
+    fprimay = sp.diff(f,'y')
+    x = abs(eval(str(fprimax), vars(math), {'x':p[0], 'y':p[1]}))
+    y = abs(eval(str(fprimay), vars(math), {'y':p[1], 'x':p[0]}))
+    gra = (x, y)
+    return gra
+
+def descenso_empinado(f, e, x1):
+    gradi = gradiante(f, x1)
+    norma = math.sqrt(gradi[0]**2+gradi[1]**2)
+    x = x1
+    while norma > e:
+        d = [-gradi[0],-gradi[1]]
+        new_x = '('+str(x[0])+'+a*' +'('+str(d[0])+')'+')'
+        new_y = '('+str(x[1])+'+a*' +'('+str(d[1])+')'+')'
+        f1 = f.replace('x', new_x)
+        f2 = f1.replace('y', new_y)
+        lan = metodo_newton(f2, 2, 0.001, e)
+        x = (x[0]+lan*d[0], x[1]+lan*d[1])
+        gradi = gradiante(f, x)
+        norma = math.sqrt(gradi[0]**2+gradi[1]**2)
+    return x
+        
+        
+prueba = descenso_empinado('(x-2)**4+(x-2*y)**2', 0.01, (2,5))
