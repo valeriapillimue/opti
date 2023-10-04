@@ -1,26 +1,47 @@
+import numpy as np
 import sympy as sp
 import math 
 
-def metodo_newton (f, landa, h, e):
-    fprima = sp.diff(f,'a')
-    fsprima = sp.diff(fprima, 'a')
-    #paso 1
-    fpl = abs(eval(str(fprima), vars(math), {'a':landa}))
-    while fpl > e:
-        fspl = eval(str(fsprima), vars(math), {'a':landa})
-        landak = landa - (fpl / fspl)
-        #paso 2
-        if abs(landak - landa) <e:
-            return landak
-        else:
+def busqueda_seccion_dorada(func, a, b, h):
+    alfa = (math.sqrt(5) - 1) / 2
+    landa = a + (1-alfa)*(b-a)
+    miu = a + alfa * (b-a)
+    flanda = abs(eval(str(func), vars(math), {'a':landa}))
+    fmiu = abs(eval(str(func), vars(math), {'a':miu}))
+    while b-a > h:
+        if flanda > fmiu:
+            #paso 2
+            ak = flanda
+            bk = b
+            #paso 4
+            landak = ak + (1 - alfa)*(bk - ak)
+            miuk = ak + alfa*(bk - ak)
+            
+            flanda = func(landak)
+            fmiu = func(miuk)
+            
+            a = ak
+            b = bk 
             landa = landak
-            fpl = abs(eval(str(fprima), vars(math), {'a':landa}))
-    return landa  
+            miu = miuk
+            
+        if flanda <= fmiu:
+            #paso 3
+            ak = a
+            bk = miu
+            #paso 4
+            landak = ak + (1 - alfa)*(bk - ak)
+            miuk = ak + alfa*(bk - ak)
+            flanda = abs(eval(str(func), vars(math), {'a':landak}))
+            fmiu = abs(eval(str(func), vars(math), {'a':miuk}))
+            a = ak
+            b = bk 
+            landa = landak
+            miu = miuk
+        
+        return (a + b)/2
+    
 
-
-# Define la función objetivo que deseas minimizar
-#def f(x):
- #   return x[0]**2 + x[1]**2
 def gradiante (f, p):
     fprimax = sp.diff(f,'x')
     fprimay = sp.diff(f,'y')
@@ -39,11 +60,13 @@ def descenso_empinado(f, e, x1):
         new_y = '('+str(x[1])+'+a*' +'('+str(d[1])+')'+')'
         f1 = f.replace('x', new_x)
         f2 = f1.replace('y', new_y)
-        lan = metodo_newton(f2, 2, 0.001, e)
+        lan = busqueda_seccion_dorada(f2, 0, 10000, 0.001)
         x = (x[0]+lan*d[0], x[1]+lan*d[1])
         gradi = gradiante(f, x)
-        norma = math.sqrt(gradi[0]**2+gradi[1]**2)
+        print('aqui')
+        norma = (gradi[0]**2+gradi[1]**2)**0.5
+        print(x)
     return x
         
         
-prueba = descenso_empinado('(x-2)**4+(x-2*y)**2', 0.01, (2,5))
+prueba = descenso_empinado('(x-2)**4+(x-2*y)**2', 0.000000001, (2,5))
