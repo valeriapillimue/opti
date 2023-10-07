@@ -1,0 +1,253 @@
+import sympy as sp
+import math
+import numpy as np
+from sympy.utilities.lambdify import lambdify
+from scipy.optimize import minimize_scalar
+from sympy import lambdify
+from scipy.optimize import minimize
+
+#funciones basicas
+
+def gradiante (f, p):
+    num = len(p)
+    variabls = []
+    evaluar = []
+    for i in range (num):
+      indice = i+1
+      variable = 'x' + str(indice)
+      variabls.append(variable)
+      evaluar.append(sp.diff(f,variable))
+    gra = []
+    for j in evaluar:
+        gra.append(eval(str(j), vars(math), {variabls[i]: p[i] for i in range(num)}))
+    return gra
+
+def evaluar_vec (f, vec, variables):
+  for var in range(len(variables)):
+    f = f.replace(variables[var], f'({vec[var]})')
+  return f
+
+def hessian_matriz(f,p):
+    num = len(p)
+    variabls = []
+    evaluar = []
+    for i in range (num):
+      evaluar.append([])
+      indice = i+1
+      variable = 'x' + str(indice)
+      variabls.append(variable)
+      fprima = sp.diff(f,variable)
+      indicemenor = 1
+      for x in range(num):
+        variablemenor = 'x' + str(indicemenor)
+        evaluar[i].append(sp.diff(fprima, variablemenor))
+        indicemenor += 1
+    h =[]
+    k = 0
+    for fun in evaluar:
+      h.append([])
+      for i in fun:
+        h[k].append(eval(str(i), vars(math), {variabls[j]: p[j] for j in range(num)}))
+      k +=1
+    return h
+
+def lambda_newton_cg (g, d, h):
+      uno = []
+      for i in range(len(g)):
+        g[i] = (-1)*g[i]
+      uno = np.dot(g,d)
+      dos = np.dot(h,d)
+      tres = np.dot(dos, d)
+      l = uno / tres
+      return l
+
+def beta_newton_cg (g, d, h):
+  uno = np.dot(h, d)
+  dos = np.dot(g,uno)
+  tres = np.dot(d,uno)
+  return dos/tres
+
+#---------------busque sección dorada----------------
+def busqueda_seccion_dorada(func, a, b, h):
+    alfa = (math.sqrt(5) - 1) / 2
+    landa = a + (1-alfa)*(b-a)
+    miu = a + alfa * (b-a)
+    flanda = abs(eval(str(func), vars(math), {'a':landa}))
+    fmiu = abs(eval(str(func), vars(math), {'a':miu}))
+    while b-a > h:
+        if flanda > fmiu:
+            #paso 2
+            ak = flanda
+            bk = b
+            #paso 4
+            landak = ak + (1 - alfa)*(bk - ak)
+            miuk = ak + alfa*(bk - ak)
+            flanda = func(landak)
+            fmiu = func(miuk)
+            a = ak
+            b = bk
+            landa = landak
+            miu = miuk
+
+        if flanda <= fmiu:
+            #paso 3
+            ak = a
+            bk = miu
+            #paso 4
+            landak = ak + (1 - alfa)*(bk - ak)
+            miuk = ak + alfa*(bk - ak)
+            flanda = abs(eval(str(func), vars(math), {'a':landak}))
+            fmiu = abs(eval(str(func), vars(math), {'a':miuk}))
+            a = ak
+            b = bk
+            landa = landak
+            miu = miuk
+
+        return (a + b)/2
+
+# Métodos-----------------------------------------------------------------------------
+
+# Método de Newton para varias variables
+def metodo_newton_bi (f, x1, e):
+    x = x1
+    gra = gradiante(f, x)
+    variabls = len (gra)
+    norma = 0
+    for i in range(len(gra)):
+        norma = norma + gra[i]**2
+    norma = math.sqrt(norma)
+    #paso principal
+    while norma > e:
+      hessian = hessian_matriz (f, x)
+      if np.linalg.det (hessian) == 0:
+        return 'La matriz Hessian no tiene inversa'
+      else:
+        hessian_inver = np.linalg.inv(np.array(hessian))
+      resultado = np.dot(hessian_inver,gra)
+      xk = np.array(x) - np.array(resultado)
+      #paso 2
+      vec = np.array(xk) - np.array(x)
+      norma2 = 0
+      for i in range(len(gra)):
+        norma2 = norma2 + vec[i]**2
+        if norma2 < 0 :
+          return xk
+      norma2 = math.sqrt(norma)
+      if norma2 < e:
+        return xk
+      else:
+        x = xk
+        gra = gradiante(f, x)
+        variabls = len (gra)
+        norma = 0
+        for i in range(len(gra)):
+          norma = norma + gra[i]**2
+        norma = math.sqrt(norma)
+    return x
+
+# Método del descenso más empinado
+def descenso_empinado(f, x1, e):
+    num = len(x1)
+    gra = gradiante(f, x1)
+    norma = 0
+    x = x1
+    for i in range(len(gra)):
+      norma = norma + gra[i]**2
+    norma = math.sqrt(norma)
+    while norma > e:
+        d = [n*(-1) for n in gra]
+        evaluar = []
+        for n in range(num):
+          evaluar.append(str(x[n])+'+a*' +'('+str(d[n])+')')
+        variabls = ['x'+str(i+1) for i in range(num)]
+        op = evaluar_vec(f, evaluar, variabls)
+        f_f = lambdify('a', op)
+        landa = minimize_scalar(f_f, method='brent').x
+        xk = []
+        for i in range(len(gra)):
+          xk.append(x[i] + landa*d[i])
+        x = xk
+        norma = 0
+        gra = gradiante(f, x)
+        for i in range(len(gra)):
+          norma = norma + gra[i]**2
+        norma = math.sqrt(norma)
+    return x
+
+# Método de Newton cg
+def newton_cg (f, x1, e):
+    x = x1
+    nvariables = len(x1)
+    gra = gradiante(f, x1)
+    norma = 0
+    x = x1
+    for i in range(len(gra)):
+      norma = norma + gra[i]**2
+    norma = math.sqrt(norma)
+    while norma > e:
+      g = gra
+      d = [g0*(-1) for g0 in gra]
+      hessian = hessian_matriz (f, x)
+      landa = lambda_newton_cg(g, d, hessian)
+      xk = []
+      for n in range(nvariables):    
+        #paso a
+        for i in range(len(gra)):
+            xk.append(x[i] + landa*d[i])
+        #paso b
+        gk = gradiante(f,xk)
+        #paso c
+        beta = beta_newton_cg(g, d, hessian)
+        #comienza a cambiar variables
+        dk = [g0*(-1)+beta for g0 in gk]
+        x = xk
+        g = gk
+        d = dk
+        hessian = hessian_matriz(f,x)
+        landa = lambda_newton_cg(g, d, hessian)
+        xk = []
+      #evaluando para paso 1
+      gra = gradiante(f, x)
+      norma = 0
+      for i in range(len(gra)):
+        norma = norma + gra[i]**2
+      norma = math.sqrt(norma)
+    return x
+
+# Método de Nelder y Mead
+#función para evaluar
+def objective_function(x):
+    return  x[i] 
+
+def nelder_mead(func, x1, e, max_iter=1000):
+    n = len(x1)
+    vertices = [x1]
+    for i in range(n):
+        x = x1.copy()
+        x[i] += 1.0
+        vertices.append(x)
+    for i in range(max_iter):
+        vertices.sort(key=lambda x: func(x))
+        best = vertices[0]
+        worst = vertices[-1]
+        centroid = np.mean(vertices[:-1], axis=0)
+        reflection = centroid + (centroid - worst)
+        
+        if func(reflection) < func(worst):
+            expansion = centroid + 2.0 * (reflection - centroid)
+            if func(expansion) < func(reflection):
+                vertices[-1] = expansion
+            else:
+                vertices[-1] = reflection
+        else:
+            contraction = centroid + 0.5 * (worst - centroid)
+            if func(contraction) < func(worst):
+                vertices[-1] = contraction
+            else:
+                for i in range(1, n+1):
+                    vertices[i] = 0.5 * (vertices[i] + best)
+        if np.linalg.norm(vertices[0] - vertices[-1]) < e:
+            break
+    
+    return vertices[0]
+
